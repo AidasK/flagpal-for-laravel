@@ -25,6 +25,10 @@ class RecordMetricForEnteredFunnelJob implements ShouldQueue
 
     public function handle(FlagPal $flagPal): void
     {
+        if ($this->value === 0) {
+            return;
+        }
+
         /** @var Metric|null $metric */
         $metric = $this->entry->funnel->metrics->firstWhere(Metric::NAME, $this->metric);
         if (! $metric) {

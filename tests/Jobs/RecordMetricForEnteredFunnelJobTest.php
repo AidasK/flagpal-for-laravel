@@ -55,3 +55,25 @@ it('skips recording the metric if it is not tracked in the funnel', function () 
 
     $job->handle($flagPal);
 });
+
+it('skips recording a zero value', function () {
+    $hydrator = $this->app->make(ItemHydrator::class);
+    $funnel = $hydrator->hydrate(new Funnel, [
+        'featureSets' => [
+            [
+                'id' => '5678',
+                FeatureSet::FEATURES => ['test' => 'foo', 'bar' => ['baz']],
+            ],
+        ],
+        'metrics' => [
+            ['id' => '5678', Metric::NAME => 'conversion'],
+        ],
+    ]);
+    $entry = new EnteredFunnel($funnel, $funnel->featureSets->first());
+    $job = new RecordMetricForEnteredFunnelJob($entry, 'conversion', 0);
+
+    $flagPal = $this->createMock(FlagPal::class);
+    $flagPal->expects($this->never())->method('recordMetric');
+
+    $job->handle($flagPal);
+});
